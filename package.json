@@ -1,12 +1,8 @@
 {
   "name": "zoom-electron-windows",
-  "version": "1.0.1",
-  "description": "",
+  "version": "1.0.3",
+  "description": "a wrapper for awful zoom-electron sdk. makes simple & clean.",
   "main": "index.js",
-  "scripts": {
-    "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/dengyaolong/zoom-windows.git"

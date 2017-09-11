@@ -1,18 +1,9 @@
 'use strict';
-const electron = require('electron');
-
-const { app, BrowserWindow } = require('electron')
 const ZOOMSDKMOD = require("./lib/zoom_sdk.js")
 
-var mainWindow = null;
-var loginWindow = null;
-var startjoinWindow = null;
-var waitingWindow = null;
-var inmeetingWindow = null;
-
-var zoomauth = null
-var zoommeeting = null
-var mymeetinguserid = 0
+let zoomAuth = null
+let zoomMeeting = null
+let mymeetinguserid = 0
 
 function meetingstatuscb(status, errorcode) {
     console.log(status, errorcode)
@@ -31,16 +22,15 @@ function videostatuscb(userid, status){}
 function start(appkey, appsecret, username, password, cb) {
     function sdkauthCB(status){
         if (ZOOMSDKMOD.ZOOMAUTHMOD.ZoomAuthResult.AUTHRET_SUCCESS == status){
-            var opts = {
+            zoomMeeting = zoomsdk.GetMeeting({
                 meetingstatuscb: meetingstatuscb,
                 meetinguserjoincb: meetinguserjoincb,
                 meetinguserleftcb: meetinguserleftcb,
                 meetinghostchangecb: meetinghostchangecb,
-            }
+            })
 
-            zoommeeting = zoomsdk.GetMeeting(opts)
 
-            zoomauth.Login(username, password, false);
+            zoomAuth.Login(username, password, false);
         } else {
             cb(new Error('sdk auth fail'))
         }
@@ -49,8 +39,7 @@ function start(appkey, appsecret, username, password, cb) {
         switch(status)
         {
             case ZOOMSDKMOD.ZOOMAUTHMOD.ZoomLoginStatus.LOGIN_SUCCESS:
-                let res = zoommeeting.StartMeeting()
-                console.log(res,'startbb')
+                zoomMeeting.StartMeeting()
                 break;
             case ZOOMSDKMOD.ZOOMAUTHMOD.ZoomLoginStatus.LOGIN_FAILED:
                 cb(new Error('login fail'))
@@ -59,16 +48,16 @@ function start(appkey, appsecret, username, password, cb) {
                 break;
         }
     }
-    var initOptions={
+    const initOptions={
         apicallretcb: function apicallresultcb(apiName, ret){
             if ('InitSDK' == apiName && ZOOMSDKMOD.ZoomSDKError.SDKERR_SUCCESS == ret){
-                var options = {
+                const options = {
                     authcb: sdkauthCB,
                     logincb: loginCB,
                     logoutcb: null,
                 }
-                zoomauth = zoomsdk.GetAuth(options)
-                zoomauth.SDKAuth(appkey, appsecret)
+                zoomAuth = zoomsdk.GetAuth(options)
+                zoomAuth.SDKAuth(appkey, appsecret)
             } else if ('CleanupSDK' == apiName){
                 cb(null, 'quit')
             }
@@ -88,13 +77,13 @@ function start(appkey, appsecret, username, password, cb) {
 function join(appkey, appsecret, meetingroomOpts, cb) {
     function sdkauthCB(status){
         if (ZOOMSDKMOD.ZOOMAUTHMOD.ZoomAuthResult.AUTHRET_SUCCESS == status){
-            var opts = {
+            const opts = {
                 meetingstatuscb:meetingstatuscb,
                 meetinguserjoincb:meetinguserjoincb,
                 meetinguserleftcb:meetinguserleftcb,
                 meetinghostchangecb:meetinghostchangecb,
             }
-            zoommeeting = zoomsdk.GetMeeting(opts)
+            zoomMeeting = zoomsdk.GetMeeting(opts)
         } else {
             cb(new Error('sdk auth faile'))
         }
@@ -103,7 +92,7 @@ function join(appkey, appsecret, meetingroomOpts, cb) {
         switch(status)
         {
             case ZOOMSDKMOD.ZOOMAUTHMOD.ZoomLoginStatus.LOGIN_SUCCESS:
-                zoommeeting.JoinMeeting(meetingroomOpts)
+                zoomMeeting.JoinMeeting(meetingroomOpts)
                 break;
             case ZOOMSDKMOD.ZOOMAUTHMOD.ZoomLoginStatus.LOGIN_FAILED:
                 cb(new Error('login faile'))
@@ -112,16 +101,16 @@ function join(appkey, appsecret, meetingroomOpts, cb) {
                 break;
         }
     }
-    var initOptions={
+    const initOptions={
         apicallretcb: function apicallresultcb(apiName, ret){
             if ('InitSDK' == apiName && ZOOMSDKMOD.ZoomSDKError.SDKERR_SUCCESS == ret){
-                var options={
+                const options={
                     authcb: sdkauthCB,
                     logincb: loginCB,
                     logoutcb:null,
                 }
-                zoomauth = zoomsdk.GetAuth(options)
-                zoomauth.SDKAuth(appkey, appsecret)
+                zoomAuth = zoomsdk.GetAuth(options)
+                zoomAuth.SDKAuth(appkey, appsecret)
             }
             else if ('CleanupSDK' == apiName){
                 cb(null, 'quit')
